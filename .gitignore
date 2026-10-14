@@ -1,0 +1,7 @@
+/target
+
+*.img
+*.iso
+
+Thumbs.db
+Desktop.ini

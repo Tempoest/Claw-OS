@@ -1,2 +1,12 @@
-    Checking claw_os v0.1.0 (D:\Tempoest-files\Claw-OS\claw_os)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+warning: unused dependency `bootloader`
+ --> Cargo.toml:7:1
+  |
+7 | bootloader = "0.9"
+  | ^^^^^^^^^^^^^^^^^^
+  |
+  = note: `cargo::unused_dependencies` is set to `warn` by default
+help: consider removing the dependency on `bootloader`
+warning: `claw_os` (manifest) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+warning: the following packages contain code that will be rejected by a future version of Rust: core v0.0.0 (C:\Users\USER\.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core)
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
