@@ -1,0 +1,20 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain from rust-toolchain.toml
+        run: rustup show
+
+      - name: QEMU
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
+
+      - name: bootimage
+        run: cargo install bootimage
+
+      - name: Tests (QEMU boots the kernel"
+        run: cargo test
