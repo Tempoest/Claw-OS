@@ -1,0 +1,32 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain from rust-toolchain.toml
+        run: rustup show
+
+      - name: Install bootimage
+        run: cargo install bootimage
+
+      - name: Build image
+        run: cargo bootimage --release
+
+      - name: Package
+        run: cp target/x86_64-claw_os/release/bootimage-claw_os.bin claw_os.img
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: claw_os.img
+          generate_release_notes: true
