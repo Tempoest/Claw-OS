@@ -1,14 +1,19 @@
 #![no_std]
-
+#![feature(abi_x86_interrupt)]
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
+
+pub fn init() {
+    interrupts::init_idt();
+}
 
 pub trait Testable {
     fn run(&self) -> ();
@@ -25,7 +30,6 @@ where
     }
 }
 
-
 pub fn test_runner(tests: &[&dyn Testable]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
@@ -34,7 +38,6 @@ pub fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
-
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
@@ -42,12 +45,12 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     loop {}
 }
 
-
 #[cfg(test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
+    init();
     test_main();
-    loop{}
+    loop {}
 }
 
 #[cfg(test)]
