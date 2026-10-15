@@ -13,6 +13,12 @@ pub extern "C" fn _start() -> ! {
 
     claw_os::init();
 
+    // fn stack_overflow() {
+    //     stack_overflow();
+    // }
+
+    // stack_overflow();
+
     x86_64::instructions::interrupts::int3();
 
     #[cfg(test)]
