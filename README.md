@@ -1,6 +1,6 @@
 # CLAW OS 🦀
 
-> A tiny operating system written in Rust, built from scratch followingos.phil-opp.com. Made for Terra by Hack Club.
+> A tiny operating system written in Rust, built from scratch following os.phil-opp.com. Made for Terra by Hack Club.
 
 [![ci](https://github.com/Tempoest/Claw-OS/actions/workflows/ci.yml/badge.svg)](https://github.com/Tempoest/Claw-OS/actions/workflows/ci.yml)
 
