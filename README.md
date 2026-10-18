@@ -21,6 +21,9 @@ Windows PowerShell:
 - Boots from a BIOS disk image
 - VGA text output, println!, scrolling, on-screen panics
 - Serial output (COM1)
+- Paging implementation: virtual-to-physical address translation
+- Physical memory management: frame allocator for allocating and managing frames
+- Page table manipulation: support for `map_to` to create custom virtual-to-physical mappings
 - Test framework with no std: cargo test boots QEMU and runs tests inside the OS
 - CI: every push — GitHub Actions builds the kernel and runs the test suite in a VM
 
