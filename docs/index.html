@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>claw_os — try it in your browser</title>
+        <title>claw_os — a tiny x86_64 kernel in Rust</title>
         <style>
             body {
                 background: #111;
@@ -11,64 +11,58 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding: 20px;
+                padding: 24px;
             }
-            #screen_container {
+            img {
                 width: 720px;
+                max-width: 100%;
+                border: 1px solid #333;
+                border-radius: 8px;
             }
-            #screen_container > div {
-                white-space: pre;
-                font: 16px monospace;
-                line-height: 16px;
-                background: #000;
-                padding: 8px;
-                min-height: 416px;
-                cursor: text;
-            }
-            #screen_container > canvas {
-                display: none;
-            }
-            p {
-                max-width: 720px;
+            h1 {
+                color: #f97316;
             }
             a {
                 color: #8fd53e;
             }
+            code {
+                background: #222;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+            p {
+                max-width: 720px;
+                line-height: 1.5;
+            }
         </style>
     </head>
     <body>
-        <h1>claw_os</h1>
+        <h1>🦀 Claw OS</h1>
         <p>
-            A tiny x86_64 kernel written in Rust from scratch (<a
-                href="https://os.phil-opp.com"
-                >Writing an OS in Rust</a
-            >). This is the real kernel image running in the v86 emulator, right
-            in your browser. Click the screen and type <code>help</code>.
+            Bare-metal x86_64 kernel written in Rust from scratch. Interactive
+            shell: <code>help</code>, <code>uptime</code>, <code>echo</code>,
+            <code>clear</code>, <code>reboot</code> — with a hardware blinking
+            cursor and colored output.
         </p>
 
-        <div id="screen_container">
-            <div></div>
-            <canvas></canvas>
-        </div>
+        <img src="screenshot.png" alt="claw_os shell" />
 
-        <script src="libv86.js"></script>
-        <script>
-            "use strict";
-            var emulator = new V86({
-                wasm_path: "v86.wasm",
-                memory_size: 64 * 1024 * 1024,
-                vga_memory_size: 2 * 1024 * 1024,
-                screen_container: document.getElementById("screen_container"),
-                bios: { url: "seabios.bin" },
-                vga_bios: { url: "vgabios.bin" },
-                hda: { url: "claw_os.img", size: 1024 * 1024 },
-                autostart: true,
-            });
-            document
-                .getElementById("screen_container")
-                .addEventListener("mousedown", function () {
-                    emulator.keyboard_set_status(true);
-                });
-        </script>
+        <p>
+            Run it yourself (one line, needs
+            <a href="https://www.qemu.org/download/">QEMU</a>):
+        </p>
+        <p>
+            <code
+                >curl -L -o claw_os.img
+                https://github.com/Tempoest/Claw-OS/releases/latest/download/claw_os.img
+                &amp;&amp; qemu-system-x86_64 -drive
+                format=raw,file=claw_os.img</code
+            >
+        </p>
+
+        <p>
+            <a href="https://github.com/Tempoest/Claw-OS">Source on GitHub</a> ·
+            <a href="https://os.phil-opp.com">Writing an OS in Rust</a>
+        </p>
     </body>
 </html>
