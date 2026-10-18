@@ -1,1 +1,5 @@
 text=auto
+
+*.img binary
+*.wasm binary
+*.bin binary
