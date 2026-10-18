@@ -20,6 +20,8 @@ pub enum Color {
     White = 15,
 }
 
+use x86_64::instructions::port::Port;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 struct ColorCode(u8);
@@ -69,6 +71,7 @@ impl Writer {
                     color_code,
                 });
                 self.column_position += 1;
+                self.update_cursor();
             }
         }
     }
@@ -81,13 +84,27 @@ impl Writer {
                 color_code: self.color_code,
             })
         }
+        self.update_cursor();
     }
 
     pub fn clear(&mut self) {
         for row in 0..BUFFER_HEIGHT {
             self.clear_row(row)
         }
-        self.column_position = 0
+        self.column_position = 0;
+        self.update_cursor();
+    }
+
+    fn update_cursor(&self) {
+        let pos = ((BUFFER_HEIGHT - 1) * BUFFER_WIDTH + self.column_position) as u16;
+        let mut index: Port<u8> = Port::new(0x3D4);
+        let mut data: Port<u8> = Port::new(0x3D5);
+        unsafe {
+            index.write(0x0F);
+            data.write((pos & 0xFF) as u8);
+            index.write(0x0E);
+            data.write(((pos >> 8) & 0xFF) as u8);
+        }
     }
 }
 
@@ -130,6 +147,15 @@ impl Writer {
 use lazy_static::lazy_static;
 use spin::Mutex;
 
+pub fn print_colored(foreground: Color, background: Color, args: core::fmt::Arguments) {
+    use core::fmt::Write;
+    let mut writer = WRITER.lock();
+    let old = writer.color_code;
+    writer.color_code = ColorCode::new(foreground, background);
+    let _ = writer.write_fmt(args);
+    writer.color_code = old;
+}
+
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
@@ -158,6 +184,23 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+#[macro_export]
+macro_rules! print_color {
+    ($fg:expr, $bg:expr, $($arg:tt)*) => (
+        $crate::vga_buffer::print_colored($fg, $bg, format_args!($($arg)*))
+    );
+}
+
+#[macro_export]
+macro_rules! println_color {
+    ($fg:expr, $bg:expr) => (
+        $crate::print_color!($fg, $bg, "\n")
+    );
+    ($fg:expr, $bg:expr, $($arg:tt)*) => (
+        $crate::print_color!($fg, $bg, "{}\n", format_args!($($arg)*))
+    );
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
@@ -166,6 +209,17 @@ pub fn _print(args: fmt::Arguments) {
     interrupts::without_interrupts(|| {
         WRITER.lock().write_fmt(args).unwrap();
     })
+}
+
+pub fn enable_cursor() {
+    let mut index: Port<u8> = Port::new(0x3D4);
+    let mut data: Port<u8> = Port::new(0x3D5);
+    unsafe {
+        index.write(0x0A);
+        data.write(0x00);
+        index.write(0x0B);
+        data.write(0x0F);
+    }
 }
 
 pub fn backspace() {

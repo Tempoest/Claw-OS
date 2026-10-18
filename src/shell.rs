@@ -1,8 +1,8 @@
-use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
-use crate::{interrupts, print, println, vga_buffer};
+use crate::vga_buffer::Color;
+use crate::{interrupts, print, print_color, println, println_color, vga_buffer};
 
 const MAX_LINE: usize = 128;
 
@@ -14,7 +14,7 @@ struct LineBuffer {
 lazy_static! {
     static ref LINE: Mutex<LineBuffer> = Mutex::new(LineBuffer {
         bytes: [0; MAX_LINE],
-        len: 0
+        len: 0,
     });
     static ref READY: Mutex<Option<(usize, [u8; MAX_LINE])>> = Mutex::new(None);
 }
@@ -49,15 +49,18 @@ pub fn handle_char(c: char) {
 }
 
 pub fn run() -> ! {
-    println!("Claw OS");
+    vga_buffer::enable_cursor();
+
+    println_color!(Color::LightGreen, Color::Black, "Claw OS");
     println!("type `help` for commands\n");
-    print!("> ");
+    print_color!(Color::Green, Color::Black, "> ");
+
     loop {
         let taken = READY.lock().take();
         if let Some((len, bytes)) = taken {
             let line = core::str::from_utf8(&bytes[..len]).unwrap_or("");
             execute(line.trim());
-            print!("> ");
+            print_color!(Color::Green, Color::Black, "> ");
         } else {
             x86_64::instructions::hlt();
         }
@@ -67,13 +70,20 @@ pub fn run() -> ! {
 fn execute(line: &str) {
     match line {
         "" => {}
-        "help" => println!("commands: help, clear, uptime, echo <text>"),
+        "help" => println!("commands: help, clear, uptime, echo <text>, reboot"),
         "clear" => vga_buffer::clear(),
-        "uptime" => println!("up {} s", interrupts::ticks() / 1000),
-
+        "uptime" => println_color!(
+            Color::LightCyan,
+            Color::Black,
+            "up {} s",
+            interrupts::ticks() / 1000
+        ),
+        "reboot" => unsafe {
+            x86_64::instructions::port::Port::new(0x64).write(0xFEu8);
+        },
         _ => match line.strip_prefix("echo ") {
             Some(rest) => println!("{}", rest),
-            None => println!("unknown command: {}", line),
+            None => println_color!(Color::LightRed, Color::Black, "unknown command: {}", line),
         },
     }
 }
