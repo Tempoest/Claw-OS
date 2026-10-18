@@ -72,6 +72,23 @@ impl Writer {
             }
         }
     }
+
+    pub fn backspace(&mut self) {
+        if self.column_position > 0 {
+            self.column_position -= 1;
+            self.buffer.chars[BUFFER_HEIGHT - 1][self.column_position].write(ScreenChar {
+                ascii_character: b' ',
+                color_code: self.color_code,
+            })
+        }
+    }
+
+    pub fn clear(&mut self) {
+        for row in 0..BUFFER_HEIGHT {
+            self.clear_row(row)
+        }
+        self.column_position = 0
+    }
 }
 
 impl Writer {
@@ -132,13 +149,13 @@ impl fmt::Write for Writer {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) =>  (&$crate::vga_buffer::_print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! println {
     () => ($crate::print!("\n"));
-    ($($arg:tt)*) => (&$crate::print!("{}\n", format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
 #[doc(hidden)]
@@ -149,6 +166,14 @@ pub fn _print(args: fmt::Arguments) {
     interrupts::without_interrupts(|| {
         WRITER.lock().write_fmt(args).unwrap();
     })
+}
+
+pub fn backspace() {
+    WRITER.lock().backspace();
+}
+
+pub fn clear() {
+    WRITER.lock().clear();
 }
 
 #[test_case]

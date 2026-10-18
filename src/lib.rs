@@ -12,15 +12,19 @@ pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
 extern crate alloc;
+pub mod shell;
 
 #[cfg(test)]
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
 
+use crate::interrupts::set_pit_frequency;
+
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize() };
+    set_pit_frequency(1000);
     x86_64::instructions::interrupts::enable();
 }
 

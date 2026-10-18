@@ -37,31 +37,33 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
 
     let heap_value = Box::new(41);
-    println!("heap_value at {:p}", heap_value);
+    // println!("heap_value at {:p}", heap_value);
 
     let mut vec = Vec::new();
     for i in 0..500 {
         vec.push(i);
     }
-    println!("vec at {:p}", vec.as_slice());
+    // println!("vec at {:p}", vec.as_slice());
 
     let reference_counted = Rc::new(vec![1, 2, 3]);
     let cloned_reference = reference_counted.clone();
-    println!(
-        "current reference count is {}",
-        Rc::strong_count(&cloned_reference)
-    );
+    // println!(
+    //     "current reference count is {}",
+    //     Rc::strong_count(&cloned_reference)
+    // );
     core::mem::drop(reference_counted);
-    println!(
-        "reference count is {} now",
-        Rc::strong_count(&cloned_reference)
-    );
+    // println!(
+    //     "reference count is {} now",
+    //     Rc::strong_count(&cloned_reference)
+    // );
 
     #[cfg(test)]
     test_main();
 
-    println!("Everything works fine");
-    claw_os::hlt_loop();
+    println!(" ");
+    // claw_os::hlt_loop();
+    // claw_os::init();
+    claw_os::shell::run();
 }
 
 #[cfg(not(test))]
