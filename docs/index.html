@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>claw_os — try it in your browser</title>
+        <style>
+            body {
+                background: #111;
+                color: #ddd;
+                font-family: monospace;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+            }
+            #screen_container {
+                width: 720px;
+            }
+            #screen_container > div {
+                white-space: pre;
+                font: 16px monospace;
+                line-height: 16px;
+                background: #000;
+                padding: 8px;
+                min-height: 416px;
+                cursor: text;
+            }
+            #screen_container > canvas {
+                display: none;
+            }
+            p {
+                max-width: 720px;
+            }
+            a {
+                color: #8fd53e;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>claw_os</h1>
+        <p>
+            A tiny x86_64 kernel written in Rust from scratch (<a
+                href="https://os.phil-opp.com"
+                >Writing an OS in Rust</a
+            >). This is the real kernel image running in the v86 emulator, right
+            in your browser. Click the screen and type <code>help</code>.
+        </p>
+
+        <div id="screen_container">
+            <div></div>
+            <canvas></canvas>
+        </div>
+
+        <script src="libv86.js"></script>
+        <script>
+            "use strict";
+            var emulator = new V86({
+                wasm_path: "v86.wasm",
+                memory_size: 64 * 1024 * 1024,
+                vga_memory_size: 2 * 1024 * 1024,
+                screen_container: document.getElementById("screen_container"),
+                bios: { url: "seabios.bin" },
+                vga_bios: { url: "vgabios.bin" },
+                hda: { url: "claw_os.img", size: 1024 * 1024 },
+                autostart: true,
+            });
+            document
+                .getElementById("screen_container")
+                .addEventListener("mousedown", function () {
+                    emulator.keyboard_set_status(true);
+                });
+        </script>
+    </body>
+</html>
