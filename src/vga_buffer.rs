@@ -149,11 +149,14 @@ use spin::Mutex;
 
 pub fn print_colored(foreground: Color, background: Color, args: core::fmt::Arguments) {
     use core::fmt::Write;
-    let mut writer = WRITER.lock();
-    let old = writer.color_code;
-    writer.color_code = ColorCode::new(foreground, background);
-    let _ = writer.write_fmt(args);
-    writer.color_code = old;
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        let old = writer.color_code;
+        writer.color_code = ColorCode::new(foreground, background);
+        let _ = writer.write_fmt(args);
+        writer.color_code = old;
+    });
 }
 
 lazy_static! {
@@ -207,8 +210,8 @@ pub fn _print(args: fmt::Arguments) {
     use x86_64::instructions::interrupts;
 
     interrupts::without_interrupts(|| {
-        WRITER.lock().write_fmt(args).unwrap();
-    })
+        let _ = WRITER.lock().write_fmt(args);
+    });
 }
 
 pub fn enable_cursor() {
@@ -223,11 +226,13 @@ pub fn enable_cursor() {
 }
 
 pub fn backspace() {
-    WRITER.lock().backspace();
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| WRITER.lock().backspace());
 }
 
 pub fn clear() {
-    WRITER.lock().clear();
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| WRITER.lock().clear());
 }
 
 #[test_case]
